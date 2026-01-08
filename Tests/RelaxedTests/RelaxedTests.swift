@@ -83,6 +83,42 @@ struct RelaxedMacroTests {
             macros: testMacros
         )
     }
+
+    @Test("Compound addition assignment")
+    func compoundAdditionAssignment() {
+        assertMacroExpansion(
+            "#relaxed(x += y)",
+            expandedSource: "x = Relaxed.sum(x, y)",
+            macros: testMacros
+        )
+    }
+
+    @Test("Compound subtraction assignment")
+    func compoundSubtractionAssignment() {
+        assertMacroExpansion(
+            "#relaxed(x -= y)",
+            expandedSource: "x = Relaxed.sum(x, -y)",
+            macros: testMacros
+        )
+    }
+
+    @Test("Compound multiplication assignment")
+    func compoundMultiplicationAssignment() {
+        assertMacroExpansion(
+            "#relaxed(x *= y)",
+            expandedSource: "x = Relaxed.product(x, y)",
+            macros: testMacros
+        )
+    }
+
+    @Test("Compound assignment with complex expression")
+    func compoundAssignmentComplexExpression() {
+        assertMacroExpansion(
+            "#relaxed(x += a * b + c)",
+            expandedSource: "x = Relaxed.sum(x, Relaxed.sum(Relaxed.product(a, b), c))",
+            macros: testMacros
+        )
+    }
 }
 
 @Suite("Relaxed Runtime Tests")
@@ -111,5 +147,23 @@ struct RelaxedRuntimeTests {
         let c: Double = 3.0
         let result = #relaxed(a + b * c)
         #expect(result == 7.0)
+    }
+
+    @Test("Macro produces correct runtime results for compound assignment")
+    func runtimeCompoundAssignment() {
+        var x: Double = 10.0
+        let y: Double = 5.0
+        #relaxed(x += y)
+        #expect(x == 15.0)
+    }
+
+    @Test("Macro produces correct runtime results for compound assignment with complex expression")
+    func runtimeCompoundAssignmentComplex() {
+        var x: Double = 1.0
+        let a: Double = 2.0
+        let b: Double = 3.0
+        let c: Double = 4.0
+        #relaxed(x += a * b + c)
+        #expect(x == 11.0)  // 1 + (2 * 3 + 4) = 1 + 10 = 11
     }
 }

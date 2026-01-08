@@ -89,6 +89,24 @@ private func rewriteInfixOperator(_ node: InfixOperatorExprSyntax) -> ExprSyntax
         // a * b → Relaxed.product(a, b)
         return makeRelaxedCall("product", leftOperand, rightOperand)
 
+    case "+=":
+        // x += y → x = Relaxed.sum(x, y)
+        return makeAssignment(leftOperand, makeRelaxedCall("sum", leftOperand, rightOperand))
+
+    case "-=":
+        // x -= y → x = Relaxed.sum(x, -y)
+        let negatedRight = ExprSyntax(
+            PrefixOperatorExprSyntax(
+                operator: .prefixOperator("-"),
+                expression: parenthesizeIfNeeded(rightOperand)
+            )
+        )
+        return makeAssignment(leftOperand, makeRelaxedCall("sum", leftOperand, negatedRight))
+
+    case "*=":
+        // x *= y → x = Relaxed.product(x, y)
+        return makeAssignment(leftOperand, makeRelaxedCall("product", leftOperand, rightOperand))
+
     default:
         // Unknown operator, preserve it but with rewritten operands
         return ExprSyntax(
@@ -126,6 +144,17 @@ private func makeRelaxedCall(
             leftParen: .leftParenToken(),
             arguments: arguments,
             rightParen: .rightParenToken()
+        )
+    )
+}
+
+/// Creates an assignment expression: `target = value`
+private func makeAssignment(_ target: ExprSyntax, _ value: ExprSyntax) -> ExprSyntax {
+    ExprSyntax(
+        InfixOperatorExprSyntax(
+            leftOperand: target.trimmed,
+            operator: ExprSyntax(AssignmentExprSyntax()),
+            rightOperand: value
         )
     )
 }

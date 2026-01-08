@@ -6,7 +6,7 @@ func saxpyFoldRelaxed(_ x: [Float], _ y: [Float], _ a: Float) -> Float {
     precondition(x.count == y.count)
     var result: Float = 0
     for i in x.indices {
-        result = #relaxed(result + a * x[i] + y[i])
+        #relaxed(result += a * x[i] + y[i])
     }
     return result
 }

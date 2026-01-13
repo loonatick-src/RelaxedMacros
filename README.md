@@ -49,8 +49,44 @@ let x3 = #relaxed(sin(a + b * c))
 // Expands to: sin(Relaxed.sum(a, Relaxed.product(b, c)))
 ```
 
-## Performance Implications
-We benchmark the following two functions on an array of 10 million elements. One uses relaxed binary operators, the other does not.
+## Why Use Relaxed Operations?
+
+Standard IEEE 754 floating-point arithmetic requires strict ordering of operations, which can prevent certain compiler optimizations. Relaxed operations tell the compiler it's okay to:
+
+- Reorder additions and multiplications
+- Reassociate nested operations
+- Use fused multiply-add (FMA) instructions
+
+This can lead to significant performance improvements in numerical code, especially in tight loops and vector operations.
+
+Consider the following example.
+
+```swift
+import Relaxed
+
+public func f1(_ a: Float, _ b: Float, _ c: Float) -> Float {
+    #relaxed(a * b + c)
+}
+
+public func f2(_ a: Float, _ b: Float, _ c: Float) -> Float {
+    a * b + c
+}
+```
+
+This is the generated code on an ARMv8-A machine when the `fmadd` is available.
+```
+<_$s14RelaxedExample2f2yS2f_S2ftF>:
+fmul    s0, s0, s1
+fadd    s0, s0, s2
+ret
+
+<_$s14RelaxedExample2f1yS2f_S2ftF>:
+fmadd   s0, s0, s1, s2
+ret
+```
+
+Consider a more involved example. We have two implementations of the same function - the only difference between them being that one wraps
+the floating point arithmetic operations in a `#relaxed` macro invocation.
 ```swift
 @inlinable
 func saxpyFold(_ x: [Float], _ y: [Float], _ a: Float) -> Float {
@@ -211,41 +247,6 @@ Arithmetic expressions inside function calls are also transformed:
 ```
 
 
-## Why Use Relaxed Operations?
-
-Standard IEEE 754 floating-point arithmetic requires strict ordering of operations, which can prevent certain compiler optimizations. Relaxed operations tell the compiler it's okay to:
-
-- Reorder additions and multiplications
-- Reassociate nested operations
-- Use fused multiply-add (FMA) instructions
-
-This can lead to significant performance improvements in numerical code, especially in tight loops and vector operations.
-
-Consider the following example.
-
-```swift
-import Relaxed
-
-public func f1(_ a: Float, _ b: Float, _ c: Float) -> Float {
-    #relaxed(a * b + c)
-}
-
-public func f2(_ a: Float, _ b: Float, _ c: Float) -> Float {
-    a * b + c
-}
-```
-
-This is the generated code on an ARMv8-A machine when the `fmadd` is available.
-```
-<_$s14RelaxedExample2f2yS2f_S2ftF>:
-fmul    s0, s0, s1
-fadd    s0, s0, s2
-ret
-
-<_$s14RelaxedExample2f1yS2f_S2ftF>:
-fmadd   s0, s0, s1, s2
-ret
-```
 
 ## Wishlist/Near-Term Future Work
 1. Support for `+=`, `-=`, `*=`

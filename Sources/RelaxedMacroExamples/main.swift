@@ -1,4 +1,4 @@
-import Relaxed
+import RelaxedMacro
 import Foundation
 
 @inlinable

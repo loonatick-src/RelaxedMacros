@@ -5,12 +5,12 @@ import PackageDescription
 import CompilerPluginSupport
 
 let package = Package(
-    name: "Relaxed",
+    name: "RelaxedMacro",
     platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13), .watchOS(.v6)],
     products: [
         .library(
-            name: "Relaxed",
-            targets: ["Relaxed"]),
+            name: "RelaxedMacro",
+            targets: ["RelaxedMacro"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-numerics", from: "1.0.0"),
@@ -19,7 +19,7 @@ let package = Package(
     targets: [
         // Macro implementation using SwiftSyntax
         .macro(
-            name: "RelaxedMacros",
+            name: "RelaxedMacroImplementation",
             dependencies: [
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
@@ -28,22 +28,22 @@ let package = Package(
         ),
         // Client library that exposes the macro
         .target(
-            name: "Relaxed",
+            name: "RelaxedMacro",
             dependencies: [
-                "RelaxedMacros",
+                "RelaxedMacroImplementation",
                 .product(name: "RealModule", package: "swift-numerics"),
             ]
         ),
         // Example executable
         .executableTarget(
-            name: "RelaxedExample",
-            dependencies: ["Relaxed"]
+            name: "RelaxedMacroExamples",
+            dependencies: ["RelaxedMacro"]
         ),
         .testTarget(
             name: "RelaxedTests",
             dependencies: [
-                "Relaxed",
-                "RelaxedMacros",
+                "RelaxedMacro",
+                "RelaxedMacroImplementation",
                 .product(name: "RealModule", package: "swift-numerics"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),

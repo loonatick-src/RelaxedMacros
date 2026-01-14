@@ -28,6 +28,6 @@
 /// produce slightly different results due to floating-point semantics.
 @freestanding(expression)
 public macro relaxed<T>(_ expression: T) -> T = #externalMacro(
-    module: "RelaxedMacros",
+    module: "RelaxedMacroImplementation",
     type: "RelaxedExpressionMacro"
 )

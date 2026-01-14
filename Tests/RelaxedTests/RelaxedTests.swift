@@ -2,8 +2,8 @@ import Testing
 import SwiftSyntax
 import SwiftSyntaxMacros
 import SwiftSyntaxMacrosTestSupport
-import RelaxedMacros
-@testable import Relaxed
+import RelaxedMacroImplementation
+@testable import RelaxedMacro
 
 private let testMacros: [String: Macro.Type] = [
     "relaxed": RelaxedExpressionMacro.self,
